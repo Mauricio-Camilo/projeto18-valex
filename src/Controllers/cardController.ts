@@ -94,9 +94,18 @@ export async function getTransactions (req: Request, res: Response) {
 
 export async function blockCard (req: Request, res: Response) {
 
-    const { cardId, cardPassword }: { cardId: number, cardPassword : string } = req.body;
+    const { cardId }: { cardId: number } = req.body;
 
     await cardService.changeCardState(cardId, true);
+    
+    res.send("Rota de bloqueio de cartão ativa");
+}
+
+export async function releaseCard (req: Request, res: Response) {
+
+    const { cardId }: { cardId: number } = req.body;
+
+    await cardService.changeCardState(cardId, false);
     
     res.send("Rota de bloqueio de cartão ativa");
 }

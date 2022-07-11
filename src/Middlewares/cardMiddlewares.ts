@@ -38,10 +38,6 @@ export async function checkValidCard (req: Request, res: Response, next : NextFu
         return res.status(422).send("Card expired");
     }
 
-    // if (password) {
-    //     return res.status(422).send("Card already contains password, it cannot be reactivated");
-    // }
-
     next();
 }
 
@@ -56,6 +52,6 @@ export async function checkPassword (req: Request, res: Response, next : NextFun
     }
 
     next();
-    
+
 }
 
