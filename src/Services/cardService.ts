@@ -98,3 +98,21 @@ export async function savePassword (id: number, password : any) {
         return true
      }
 }
+
+export async function checkPassword (id : number, password : string) {
+
+    const card = await cardRepository.findById(id);
+
+    const crypt = new Cryptr("password");
+
+    const decryptedPassword = crypt.decrypt(card.password);
+
+    if (decryptedPassword !== password) return false;
+    else return true;
+}
+
+export async function changeCardState (id : number, state : boolean) {
+    await cardRepository.update(id, {
+        isBlocked: state
+    })
+}

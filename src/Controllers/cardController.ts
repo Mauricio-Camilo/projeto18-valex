@@ -3,7 +3,7 @@ import * as cardService from "./../Services/cardService.js";
 import * as companyService from "./../Services/companyService.js"
 import * as employeeService from "./../Services/employeeService.js"
 
-export async function createCard(req: Request, res: Response) {
+export async function createCard (req: Request, res: Response) {
 
     const { employeeId, type }: { employeeId: number , type: any } = req.body;
 
@@ -33,7 +33,6 @@ export async function createCard(req: Request, res: Response) {
     }
 
     const card = await cardService.createCard(checkEmployee.fullName);
-    console.log(card);
     const {cardNumber, cardName, expirationDate, securityCode} = card;
 
     const cardData = {
@@ -60,17 +59,7 @@ export async function activateCard (req: Request, res: Response) {
 
     const { card } = res.locals;
 
-    const { expirationDate, password, securityCode } = card;
-
-    const expiredCard = await cardService.checkExpirationDate(expirationDate);
-
-    if (expiredCard) {
-        return res.status(422).send("Card expired")
-    }
-
-    if (password) {
-        return res.status(422).send("Card already contains password, it cannot be reactivated")
-    }
+    const { password,securityCode } = card;
 
     const checkSecurityCode = await cardService.checkSecurityCode (inputSecurityCode, securityCode);
 
@@ -78,11 +67,37 @@ export async function activateCard (req: Request, res: Response) {
         return res.status(422).send("Invalid security code");
     }
 
-    const savePassword = await cardService.savePassword(cardId, inputPassword);
-
-    if (!savePassword) {
-        return res.status(422).send("Invalid password format");
+        if (password) {
+        return res.status(422).send("Card already contains password, it cannot be reactivated");
     }
+
+    // const savePassword = await cardService.savePassword(cardId, inputPassword);
+
+    // if (!savePassword) {
+    //     return res.status(422).send("Invalid password format");
+    // }
 
     res.send("Rota de ativação de card funcionando");
 }
+
+export async function getTransactions (req: Request, res: Response) {
+
+    const { cardId }: { cardId: number } = req.body;
+
+    const { card } = res.locals;
+
+    console.log(card);
+
+    res.send("Rote de mostras trnasações ativada");
+
+}
+
+export async function blockCard (req: Request, res: Response) {
+
+    const { cardId, cardPassword }: { cardId: number, cardPassword : string } = req.body;
+
+    await cardService.changeCardState(cardId, true);
+    
+    res.send("Rota de bloqueio de cartão ativa");
+}
+
