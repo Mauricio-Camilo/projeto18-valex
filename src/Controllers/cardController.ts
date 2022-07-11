@@ -68,13 +68,9 @@ export async function activateCard (req: Request, res: Response) {
 
     const { cardId, inputSecurityCode, inputPassword }: { cardId: number , inputSecurityCode: number , inputPassword: string } = req.body;
 
-    const checkCard = await cardService.findCard(cardId);
+    const { card } = res.locals;
 
-    if (!checkCard) {
-        return res.status(422).send("Card inexistent")
-    }
-
-    const {id, expirationDate, password, securityCode} = checkCard;
+    const { expirationDate, password, securityCode } = card;
 
     const expiredCard = await cardService.checkExpirationDate(expirationDate);
 
@@ -82,7 +78,7 @@ export async function activateCard (req: Request, res: Response) {
         return res.status(422).send("Card expired")
     }
 
-    if (checkCard.password) {
+    if (password) {
         return res.status(422).send("Card already contains password, it cannot be reactivated")
     }
 
@@ -92,7 +88,7 @@ export async function activateCard (req: Request, res: Response) {
         return res.status(422).send("Invalid security code");
     }
 
-    const savePassword = await cardService.savePassword(id, inputPassword);
+    const savePassword = await cardService.savePassword(cardId, inputPassword);
 
     if (!savePassword) {
         return res.status(422).send("Invalid password format");
