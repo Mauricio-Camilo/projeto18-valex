@@ -32,29 +32,19 @@ export async function createCard(req: Request, res: Response) {
         return res.status(422).send("Duplicate card");
     }
 
-    // Criação do número do cartão, modificar a função usada do faker
-    const cardNumber = cardService.createCardNumber();
-
-    // Edita o nome para o cartão
-    const cardName = cardService.editCardName(checkEmployee.fullName);
-
-    // Gera a data de expiração do cartão
-    const expirationDate = cardService.generateExpirationDate();
-
-    // Gera o CVC do cartão
-    const securityCode = cardService.createSecurityCode();
-
-    // FALTA CRIPTOGRAFAR O CÓDIGO DE SEGURANÇA;
+    const card = await cardService.createCard(checkEmployee.fullName);
+    console.log(card);
+    const {cardNumber, cardName, expirationDate, securityCode} = card;
 
     const cardData = {
         employeeId,
         number: cardNumber,
         cardholderName: cardName,
-        securityCode: securityCode, // falta criptografar
+        securityCode: securityCode, 
         expirationDate: expirationDate,
-        password: null, // verificar se da certo
+        password: null, 
         isVirtual: false,
-        originalCardId: null, // conferir o que enviar aqui
+        originalCardId: null, 
         isBlocked: true,
         type,
     }

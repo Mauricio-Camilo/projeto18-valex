@@ -7,6 +7,14 @@ import * as cardRepository from "./../repositories/cardRepository.js";
      return checkType;
  }
 
+ export async function createCard (name: string) {
+    const cardNumber = createCardNumber();
+    const cardName = editCardName(name);
+    const expirationDate = generateExpirationDate();
+    const securityCode = createSecurityCode();
+    return {cardNumber, cardName, expirationDate, securityCode};
+ } 
+
  export function createCardNumber () {
     const randomNumber : string = faker.finance.routingNumber(); 
     return randomNumber;
@@ -42,10 +50,9 @@ import * as cardRepository from "./../repositories/cardRepository.js";
 
  export function createSecurityCode () {
      const securityCode = faker.finance.creditCardCVV();
-     console.log("security code:", securityCode);
+
      const crypt = new Cryptr("CVC_Key");
      const encryptedCode = crypt.encrypt(securityCode);
-     const decryptedCode = crypt.decrypt(encryptedCode);
 
      return encryptedCode;
  }
