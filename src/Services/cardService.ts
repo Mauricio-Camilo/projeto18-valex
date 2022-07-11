@@ -1,19 +1,55 @@
 import { faker } from '@faker-js/faker';
 import Cryptr from 'cryptr';
 import * as cardRepository from "./../repositories/cardRepository.js";
+import * as employeeService from "./../Services/employeeService.js";
 
- export async function checkCardType (type, id: number) {
-     const checkType = await cardRepository.findByTypeAndEmployeeId(type, id);
-     return checkType;
- }
 
- export async function createCard (name: string) {
+
+ export async function createCard (employeeId: number, type: any) {
+
+    const checkEmployee = await employeeService.findEmployeeId(employeeId);
+
+    if (!checkEmployee) {
+        throw {
+            name: "notFound",
+            message: "Employee does not exist"
+        }
+    }
+
+    const checkCard = await checkCardType(type, employeeId);
+
+    if (checkCard) {
+        throw {
+            name: "notAuthorized",
+            message: "Duplicated card cannot be created"
+        }
+    }
+
     const cardNumber = createCardNumber();
-    const cardName = editCardName(name);
+    const cardName = editCardName(checkEmployee.fullName);
     const expirationDate = generateExpirationDate();
     const securityCode = createSecurityCode();
-    return {cardNumber, cardName, expirationDate, securityCode};
+
+    const cardData = {
+        employeeId,
+        number: cardNumber,
+        cardholderName: cardName,
+        securityCode: securityCode, 
+        expirationDate: expirationDate,
+        password: null, 
+        isVirtual: false,
+        originalCardId: null, 
+        isBlocked: true,
+        type,
+    }
+
+    // await cardRepository.insert(cardData);
  } 
+ 
+ export async function checkCardType (type : any, id: number) {
+    const checkType = await cardRepository.findByTypeAndEmployeeId(type, id);
+    return checkType;
+}
 
  export function createCardNumber () {
     const randomNumber : string = faker.finance.routingNumber(); 
@@ -57,22 +93,9 @@ import * as cardRepository from "./../repositories/cardRepository.js";
      return encryptedCode;
  }
 
-export async function saveCard (object : any) {
-    await cardRepository.insert(object);
-}
-
 export async function findCard (id : number) {
     const checkCard = await cardRepository.findById(id);
     return checkCard;
-}
-
-export async function checkExpirationDate (expirationDate : any) {
-    let today = (new Date(Date.now())).toLocaleDateString();
-    let todayDate = Date.parse(today.substring(3,6) + today.substring(8));
-    let limitDate = Date.parse(expirationDate);
-
-    if (todayDate > limitDate) return true;
-    else return false;
 }
 
 export async function checkSecurityCode (inputSecurityCode : any, securityCode : any) {
@@ -97,18 +120,6 @@ export async function savePassword (id: number, password : any) {
         });
         return true
      }
-}
-
-export async function checkPassword (id : number, password : string) {
-
-    const card = await cardRepository.findById(id);
-
-    const crypt = new Cryptr("password");
-
-    const decryptedPassword = crypt.decrypt(card.password);
-
-    if (decryptedPassword !== password) return false;
-    else return true;
 }
 
 export async function changeCardState (id : number, state : boolean) {

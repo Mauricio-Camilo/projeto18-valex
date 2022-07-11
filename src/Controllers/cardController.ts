@@ -7,6 +7,8 @@ export async function createCard (req: Request, res: Response) {
 
     const { employeeId, type }: { employeeId: number , type: any } = req.body;
 
+    // README: Colocar todas as validações em middlewares
+
     // Recebimento da chave, talvez mudar o jeito que recebe
     const { authorization } = req.headers;
     const API_Key = authorization?.replace('Bearer', '').trim();
@@ -17,39 +19,9 @@ export async function createCard (req: Request, res: Response) {
     if (!checkAPI_Key) {
         return res.status(422).send("Invalid API Key");
     }
-
-    const checkEmployee = await employeeService.findEmployeeId(employeeId);
-
-    // Validação do funcionário
-    if (!checkEmployee) {
-        return res.status(422).send("Employee does not exist");
-    }
-
-    // Validação do tipo de cartão
-    const checkCardType = await cardService.checkCardType(type, employeeId);
-
-    if (checkCardType) {
-        return res.status(422).send("Duplicate card");
-    }
-
-    const card = await cardService.createCard(checkEmployee.fullName);
-    const {cardNumber, cardName, expirationDate, securityCode} = card;
-
-    const cardData = {
-        employeeId,
-        number: cardNumber,
-        cardholderName: cardName,
-        securityCode: securityCode, 
-        expirationDate: expirationDate,
-        password: null, 
-        isVirtual: false,
-        originalCardId: null, 
-        isBlocked: true,
-        type,
-    }
-
-    await cardService.saveCard(cardData);
-   
+    
+    await cardService.createCard(employeeId, type);
+    
     res.send("Rota de criar cards ativada");
 }
 
@@ -71,11 +43,11 @@ export async function activateCard (req: Request, res: Response) {
         return res.status(422).send("Card already contains password, it cannot be reactivated");
     }
 
-    // const savePassword = await cardService.savePassword(cardId, inputPassword);
+    const savePassword = await cardService.savePassword(cardId, inputPassword);
 
-    // if (!savePassword) {
-    //     return res.status(422).send("Invalid password format");
-    // }
+    if (!savePassword) {
+        return res.status(422).send("Invalid password format");
+    }
 
     res.send("Rota de ativação de card funcionando");
 }
@@ -94,18 +66,18 @@ export async function getTransactions (req: Request, res: Response) {
 
 export async function blockCard (req: Request, res: Response) {
 
-    const { cardId }: { cardId: number } = req.body;
+    const { id } = res.locals;
 
-    await cardService.changeCardState(cardId, true);
+    await cardService.changeCardState(id, true);
     
     res.send("Rota de bloqueio de cartão ativa");
 }
 
 export async function releaseCard (req: Request, res: Response) {
 
-    const { cardId }: { cardId: number } = req.body;
+    const { id } = res.locals;
 
-    await cardService.changeCardState(cardId, false);
+    await cardService.changeCardState(id, false);
     
     res.send("Rota de bloqueio de cartão ativa");
 }
