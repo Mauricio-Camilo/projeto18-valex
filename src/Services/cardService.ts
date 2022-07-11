@@ -1,19 +1,6 @@
 import { faker } from '@faker-js/faker';
-
-import * as companyRepository from "./../repositories/companyRepository.js";
-import * as employeeRepository from "./../repositories/employeeRepository.js";
+import Cryptr from 'cryptr';
 import * as cardRepository from "./../repositories/cardRepository.js";
-
-
-export async function findCompanyAPI (API_Key : string) {
-    const checkAPI_Key = await companyRepository.findByApiKey(API_Key);
-    return checkAPI_Key;
-}
-
-export async function findEmployeeId (id : number) {
-    const checkId = await employeeRepository.findById(id);
-    return checkId;
-}
 
  export async function checkCardType (type, id: number) {
      const checkType = await cardRepository.findByTypeAndEmployeeId(type, id);
@@ -49,15 +36,58 @@ export async function findEmployeeId (id : number) {
 
      date += fiveYears + oneDay; // Add one day because lap year
 
-     const expirationDate = new Date(date);
-     return expirationDate.toLocaleDateString()
+     const expirationDate = new Date(date).toLocaleDateString();
+     return (expirationDate.substring(3,6) + expirationDate.substring(8));
  }
 
  export function createSecurityCode () {
      const securityCode = faker.finance.creditCardCVV();
-     return securityCode;
+     console.log("security code:", securityCode);
+     const crypt = new Cryptr("CVC_Key");
+     const encryptedCode = crypt.encrypt(securityCode);
+     const decryptedCode = crypt.decrypt(encryptedCode);
+
+     return encryptedCode;
  }
 
-// export function getUserName () {
-//     const fullName = 
-// }
+export async function saveCard (object : any) {
+    await cardRepository.insert(object);
+}
+
+export async function findCard (id : number) {
+    const checkCard = await cardRepository.findById(id);
+    return checkCard;
+}
+
+export async function checkExpirationDate (expirationDate : any) {
+    let today = (new Date(Date.now())).toLocaleDateString();
+    let todayDate = Date.parse(today.substring(3,6) + today.substring(8));
+    let limitDate = Date.parse(expirationDate);
+
+    if (todayDate > limitDate) return true;
+    else return false;
+}
+
+export async function checkSecurityCode (inputSecurityCode : any, securityCode : any) {
+
+    const crypt = new Cryptr("CVC_Key");
+    const decryptedCode = crypt.decrypt(securityCode);
+
+    if (inputSecurityCode !== decryptedCode) return false
+    else return true
+}
+
+export async function savePassword (id: number, password : any) {
+    const regex = /^[0-9]{4}$/;
+    const checkPassword = regex.test(password);
+     if (!checkPassword) return false
+     else {
+        const crypt = new Cryptr("password");
+        const encryptedPassword : any = crypt.encrypt(password);
+        await cardRepository.update(id, {
+            password: encryptedPassword,
+            isBlocked: false
+        });
+        return true
+     }
+}
