@@ -2,6 +2,8 @@ import { faker } from '@faker-js/faker';
 import Cryptr from 'cryptr';
 import * as cardRepository from "./../repositories/cardRepository.js";
 import * as employeeService from "./../Services/employeeService.js";
+import * as paymentRepository from "../repositories/paymentRepository.js";
+import * as rechargeRepository from "../repositories/rechargeRepository.js";
 
  export async function createCard (employeeId: number, type: any) {
 
@@ -175,4 +177,39 @@ export async function changeCardState (id : number, state : boolean) {
     await cardRepository.update(id, {
         isBlocked: state
     })
+}
+
+export async function getCardTransactions (id : number) {
+
+    const transactions = await paymentRepository.findByCardId(id);
+
+    const recharges = await rechargeRepository.findByCardId(id);
+
+    const balance = await calculateBalance(transactions, recharges);
+
+    const cardTransactions = {
+        balance,
+        transactions,
+        recharges
+    }
+
+    return cardTransactions;
+}
+
+export async function calculateBalance (transactions : any, recharges : any) {
+
+    let transactionsBalance = 0;
+
+    transactions.forEach(transaction => {
+        transactionsBalance += transaction.amount
+    });
+
+    let rechargesBalance = 0;
+
+    recharges.forEach(recharge => {
+        rechargesBalance += recharge.amount
+    });
+
+    return (rechargesBalance - transactionsBalance)
+
 }

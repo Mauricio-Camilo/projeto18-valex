@@ -24,18 +24,6 @@ export async function activateCard (req: Request, res: Response) {
     res.status(200).send("Rota de ativação de card funcionando");
 }
 
-export async function getTransactions (req: Request, res: Response) {
-
-    const { cardId }: { cardId: number } = req.body;
-
-    const { card } = res.locals;
-
-    console.log(card);
-
-    res.send("Rote de mostras trnasações ativada");
-
-}
-
 export async function blockCard (req: Request, res: Response) {
 
     const { id, status } = res.locals;
@@ -52,5 +40,14 @@ export async function releaseCard (req: Request, res: Response) {
     await cardService.checkReleasedCard(id, status);
     
     res.send("Rota de bloqueio de cartão ativa");
+}
+
+export async function getTransactions (req: Request, res: Response) {
+
+    const { cardId }: { cardId: number } = req.body;
+
+    const transactions = await cardService.getCardTransactions(cardId);
+
+    res.status(200).send(transactions);
 }
 

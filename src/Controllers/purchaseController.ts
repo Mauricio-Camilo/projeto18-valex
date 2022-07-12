@@ -8,6 +8,6 @@ export async function postPurchase (req: Request, res: Response) {
 
     await purchaseService.savePurchase(cardId, amount, businessId);
 
-    res.status(201).send("Rota de compra ativada");
+    res.status(200).send("Purchase completed");
 
 }
