@@ -1,16 +1,12 @@
 import { Request, Response } from "express";
+import * as rechargeService from "../Services/rechargeService.js";
 
 export async function postRecharge (req: Request, res: Response) {
-    // README: PULAR ETAPA DA API_KEY
 
-    const { cardId, amout }: { cardId: number , amout: number } = req.body;
+    const { cardId, amount }: { cardId: number , amount: number } = req.body;
 
-    if (amout < 0) {
-        return res.status(422).send("Invalid amount value");
-    }
+    await rechargeService.rechargeCard(cardId, amount);
 
-    
-
-    res.send("Rota de recarga ativada");
+    res.status(201).send("Rota de recarga ativada");
 
 }

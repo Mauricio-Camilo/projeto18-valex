@@ -6,17 +6,6 @@ export async function createCard (req: Request, res: Response) {
 
     const { employeeId, type }: { employeeId: number , type: any } = req.body;
 
-    // Recebimento da chave, talvez mudar o jeito que recebe
-    const { authorization } = req.headers;
-    const API_Key = authorization?.replace('Bearer', '').trim();
-
-    const checkAPI_Key = await companyService.findCompanyAPI(API_Key);
-
-    // Validação da API_KEY
-    if (!checkAPI_Key) {
-        return res.status(422).send("Invalid API Key");
-    }
-    
     await cardService.createCard(employeeId, type);
     
     res.status(201).send("Rota de criar cards ativada");
