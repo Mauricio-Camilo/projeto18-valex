@@ -66,8 +66,23 @@ export async function checkPassword (req: Request, res: Response, next : NextFun
     next();
 }
 
-// TIRAR DAQUI
-export async function checkActivateCard (req: Request, res: Response, next : NextFunction) {
+export async function checkActiveCard (req: Request, res: Response, next : NextFunction) {
+
+    const { card } = res.locals;
+
+    const { password } = card;
+
+    if (!password) {
+        throw {
+            name: "notAuthorized",
+            message: "Card unactive"
+        }
+    }
+
+    next();
+}
+
+export async function checkStatusCard (req: Request, res: Response, next : NextFunction) {
 
     const { card } = res.locals;
 

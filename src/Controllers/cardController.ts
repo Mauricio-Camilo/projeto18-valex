@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import * as cardService from "./../Services/cardService.js";
-import * as companyService from "./../Services/companyService.js"
 
 export async function createCard (req: Request, res: Response) {
 
@@ -45,7 +44,6 @@ export async function blockCard (req: Request, res: Response) {
     
     res.send("Rota de bloqueio de cartão ativa");
 }
-
 
 export async function releaseCard (req: Request, res: Response) {
 

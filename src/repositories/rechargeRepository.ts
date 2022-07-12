@@ -13,7 +13,6 @@ export async function findByCardId(cardId: number) {
     `SELECT * FROM recharges WHERE "cardId"=$1`,
     [cardId]
   );
-
   return result.rows;
 }
 
