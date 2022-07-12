@@ -4,25 +4,20 @@ import * as cardRepository from "../repositories/cardRepository.js";
 
 export async function findCard (req: Request, res: Response, next : NextFunction) {
 
-    try {
-
         const { cardId }: { cardId: number } = req.body;
 
         const cardData = await cardRepository.findById(cardId);
-    
+
         if (!cardData) {
-            return res.status(422).send("Card inexistent")
+            throw {
+                name: "notFound",
+                message: "Card inexistent"
+            }
         }
     
         res.locals.card = cardData;
          
         next();
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Deu ruim")
-    }
-
 }
 
 export async function checkCardValidation (req: Request, res: Response, next : NextFunction) {
@@ -36,7 +31,10 @@ export async function checkCardValidation (req: Request, res: Response, next : N
     let limitDate = Date.parse(expirationDate);
 
     if (todayDate > limitDate) {
-        return  res.status(422).send("Card expired");
+        throw {
+            name: "validationError",
+            message: "Card expired"
+        }
     }
 
     next();
@@ -46,29 +44,40 @@ export async function checkPassword (req: Request, res: Response, next : NextFun
 
     const { cardId, cardPassword }: { cardId: number, cardPassword : string } = req.body;
 
-    const card = await cardRepository.findById(cardId);
+    const { card } = res.locals;
+
+    const { password, isBlocked } = card;
 
     const crypt = new Cryptr("password");
 
-    const decryptedPassword = crypt.decrypt(card.password);
+    const decryptedPassword = crypt.decrypt(password);
 
     if (decryptedPassword !== cardPassword) {
-        return res.status(422).send("Invalid password check");
+        throw {
+            name: "notAuthorized",
+            message: "Invalid password"
+        }
     }
 
-    res.locals.id = cardId;
+        res.locals.status = isBlocked;
+
+        res.locals.id = cardId;
 
     next();
-
 }
 
+// TIRAR DAQUI
 export async function checkActivateCard (req: Request, res: Response, next : NextFunction) {
+
     const { card } = res.locals;
 
     const { isBlocked } = card;
 
     if (isBlocked) {
-        return res.status(422).send("Card blocked")
+        throw {
+            name: "notAuthorized",
+            message: "Card blocked"
+        }
     }
 
     next();

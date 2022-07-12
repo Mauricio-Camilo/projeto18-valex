@@ -11,6 +11,16 @@ export default function errorHandlerMiddleware
         console.log(error.message);
         res.status(401).send(error.message);
     }
+
+    if (error.name === "validationError") {
+        console.log(error.message);
+        res.status(422).send(error.message);
+    }
+
+    if (error.name === "alreadyExists") {
+        console.log(error.message);
+        res.status(409).send(error.message);
+    }
   }
 
 

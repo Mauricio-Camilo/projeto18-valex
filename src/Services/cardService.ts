@@ -3,9 +3,32 @@ import Cryptr from 'cryptr';
 import * as cardRepository from "./../repositories/cardRepository.js";
 import * as employeeService from "./../Services/employeeService.js";
 
-
-
  export async function createCard (employeeId: number, type: any) {
+
+    const employee = await creationValidations (employeeId, type);
+   
+    const cardNumber = createCardNumber();
+    const cardName = editCardName(employee.fullName);
+    const expirationDate = generateExpirationDate();
+    const securityCode = createSecurityCode();
+
+    const cardData = {
+        employeeId,
+        number: cardNumber,
+        cardholderName: cardName,
+        securityCode: securityCode, 
+        expirationDate: expirationDate,
+        password: null, 
+        isVirtual: false,
+        originalCardId: null, 
+        isBlocked: true,
+        type,
+    }
+
+    await cardRepository.insert(cardData);
+ } 
+
+ export async function creationValidations (employeeId: number, type: any) {
 
     const checkEmployee = await employeeService.findEmployeeId(employeeId);
 
@@ -25,26 +48,8 @@ import * as employeeService from "./../Services/employeeService.js";
         }
     }
 
-    const cardNumber = createCardNumber();
-    const cardName = editCardName(checkEmployee.fullName);
-    const expirationDate = generateExpirationDate();
-    const securityCode = createSecurityCode();
-
-    const cardData = {
-        employeeId,
-        number: cardNumber,
-        cardholderName: cardName,
-        securityCode: securityCode, 
-        expirationDate: expirationDate,
-        password: null, 
-        isVirtual: false,
-        originalCardId: null, 
-        isBlocked: true,
-        type,
-    }
-
-    // await cardRepository.insert(cardData);
- } 
+    return checkEmployee;
+ }
  
  export async function checkCardType (type : any, id: number) {
     const checkType = await cardRepository.findByTypeAndEmployeeId(type, id);
@@ -86,31 +91,55 @@ import * as employeeService from "./../Services/employeeService.js";
 
  export function createSecurityCode () {
      const securityCode = faker.finance.creditCardCVV();
-
+     console.log(securityCode);
      const crypt = new Cryptr("CVC_Key");
      const encryptedCode = crypt.encrypt(securityCode);
 
      return encryptedCode;
  }
 
-export async function findCard (id : number) {
+ export async function findCard (id : number) {
     const checkCard = await cardRepository.findById(id);
     return checkCard;
 }
+
+ export async function activateCard (cardId : number, inputSecurityCode : number, 
+    inputPassword : string, securityCode : string, password : string) {
+     
+   await checkSecurityCode(inputSecurityCode, securityCode);
+
+    if (password) {
+        throw {
+            name: "alreadyExists",
+            message: "Card already contains password, it cannot be activated"
+        }   
+     }
+     await savePassword(cardId, inputPassword);
+ }
 
 export async function checkSecurityCode (inputSecurityCode : any, securityCode : any) {
 
     const crypt = new Cryptr("CVC_Key");
     const decryptedCode = crypt.decrypt(securityCode);
 
-    if (inputSecurityCode !== decryptedCode) return false
-    else return true
+    if (inputSecurityCode !== decryptedCode) {
+        throw {
+            name: "notAuthorized",
+            message: "Invalid security code"
+        }
+    }
 }
 
 export async function savePassword (id: number, password : any) {
+
     const regex = /^[0-9]{4}$/;
     const checkPassword = regex.test(password);
-     if (!checkPassword) return false
+     if (!checkPassword) {
+            throw {
+                name: "validationError",
+                message: "Invalid password format"
+            } 
+     }
      else {
         const crypt = new Cryptr("password");
         const encryptedPassword : any = crypt.encrypt(password);
@@ -118,8 +147,28 @@ export async function savePassword (id: number, password : any) {
             password: encryptedPassword,
             isBlocked: false
         });
-        return true
      }
+}
+
+export async function checkBlockedCard (id : number, state : boolean) {
+    console.log(state);
+       if (state) {
+        throw {
+            name: "validationError",
+            message: "This card is already blocked"
+        } 
+   }
+   await changeCardState(id, true);
+}
+
+export async function checkReleasedCard (id : number, state : boolean) {
+       if (!state) {
+        throw {
+            name: "validationError",
+            message: "This card is already released"
+        } 
+   }
+   await changeCardState(id, false);
 }
 
 export async function changeCardState (id : number, state : boolean) {
