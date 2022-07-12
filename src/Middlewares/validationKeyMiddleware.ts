@@ -1,12 +1,11 @@
 import {Request, Response, NextFunction} from "express";
-import * as companyService from "./../Services/companyService.js"
+import * as companyRepository from "./../repositories/companyRepository.js";
 
 export async function validateAPIKey (req: Request, res: Response, next : NextFunction) {
 
-     const { authorization } = req.headers;
-     const API_Key = authorization?.replace('Bearer', '').trim();
+    const API_Key = req.headers["x-api-key"];
  
-     const checkAPI_Key = await companyService.findCompanyAPI(API_Key);
+     const checkAPI_Key = await companyRepository.findByApiKey(API_Key.toString());
 
      if (!checkAPI_Key) {
         throw {
@@ -14,6 +13,5 @@ export async function validateAPIKey (req: Request, res: Response, next : NextFu
             message: "Invalid API Key"
         }
     }
-
     next();
 }

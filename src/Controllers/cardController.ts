@@ -7,7 +7,7 @@ export async function createCard (req: Request, res: Response) {
 
     await cardService.createCard(employeeId, type);
     
-    res.status(201).send("Rota de criar cards ativada");
+    res.sendStatus(201);
 }
 
 export async function activateCard (req: Request, res: Response) {
@@ -21,8 +21,8 @@ export async function activateCard (req: Request, res: Response) {
     await cardService.activateCard(cardId, inputSecurityCode, 
         inputPassword, securityCode, password);
 
-    res.status(200).send("Rota de ativação de card funcionando");
-}
+        res.sendStatus(200);
+    }
 
 export async function blockCard (req: Request, res: Response) {
 
@@ -30,7 +30,7 @@ export async function blockCard (req: Request, res: Response) {
 
     await cardService.checkBlockedCard(id, status);
     
-    res.send("Rota de bloqueio de cartão ativa");
+    res.sendStatus(200);
 }
 
 export async function releaseCard (req: Request, res: Response) {
@@ -39,7 +39,7 @@ export async function releaseCard (req: Request, res: Response) {
 
     await cardService.checkReleasedCard(id, status);
     
-    res.send("Rota de bloqueio de cartão ativa");
+    res.sendStatus(200);
 }
 
 export async function getTransactions (req: Request, res: Response) {

@@ -7,6 +7,5 @@ export async function postRecharge (req: Request, res: Response) {
 
     await rechargeService.rechargeCard(cardId, amount);
 
-    res.status(201).send("Rota de recarga ativada");
-
+    res.sendStatus(201);
 }

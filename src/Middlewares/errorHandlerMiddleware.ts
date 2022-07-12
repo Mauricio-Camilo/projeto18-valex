@@ -21,6 +21,11 @@ export default function errorHandlerMiddleware
         console.log(error.message);
         res.status(409).send(error.message);
     }
+
+    if (error.name === "ConnectionError") {
+        console.log(error.message);
+        res.status(500).send(error.message);
+    }
   }
 
 

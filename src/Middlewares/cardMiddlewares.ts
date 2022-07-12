@@ -14,7 +14,6 @@ export async function findCard (req: Request, res: Response, next : NextFunction
                 message: "Card inexistent"
             }
         }
-    
         res.locals.card = cardData;
          
         next();
@@ -36,7 +35,6 @@ export async function checkCardValidation (req: Request, res: Response, next : N
             message: "Card expired"
         }
     }
-
     next();
 }
 
@@ -58,7 +56,6 @@ export async function checkPassword (req: Request, res: Response, next : NextFun
             message: "Invalid password"
         }
     }
-
         res.locals.status = isBlocked;
 
         res.locals.id = cardId;
@@ -78,7 +75,6 @@ export async function checkActiveCard (req: Request, res: Response, next : NextF
             message: "Card unactive"
         }
     }
-
     next();
 }
 
@@ -94,7 +90,6 @@ export async function checkStatusCard (req: Request, res: Response, next : NextF
             message: "Card blocked"
         }
     }
-
     next();
 }
 
