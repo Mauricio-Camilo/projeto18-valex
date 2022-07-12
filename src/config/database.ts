@@ -19,4 +19,3 @@ connection.on("error", (err, client) => {
 });
 
 export { connection };
-

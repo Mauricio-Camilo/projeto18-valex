@@ -18,11 +18,10 @@ export async function activateCard (req: Request, res: Response) {
 
     const { password,securityCode } = card;
 
-    await cardService.activateCard(cardId, inputSecurityCode, 
-        inputPassword, securityCode, password);
+    await cardService.activateCard(cardId, inputSecurityCode,inputPassword, securityCode, password);
 
-        res.sendStatus(200);
-    }
+    res.sendStatus(200);
+}
 
 export async function blockCard (req: Request, res: Response) {
 

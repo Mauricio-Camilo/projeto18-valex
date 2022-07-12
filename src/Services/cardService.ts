@@ -27,7 +27,7 @@ import * as rechargeRepository from "../repositories/rechargeRepository.js";
         type,
     }
 
-    await cardRepository.insert(cardData);
+    // await cardRepository.insert(cardData);
  } 
 
  export async function creationValidations (employeeId: number, type: any) {
@@ -41,26 +41,20 @@ import * as rechargeRepository from "../repositories/rechargeRepository.js";
         }
     }
 
-    const checkCard = await checkCardType(type, employeeId);
+    const checkType = await cardRepository.findByTypeAndEmployeeId(type, employeeId);
 
-    if (checkCard) {
+    if (checkType) {
         throw {
             name: "notAuthorized",
             message: "Duplicated card cannot be created"
         }
     }
-
     return checkEmployee;
  }
  
- export async function checkCardType (type : any, id: number) {
-    const checkType = await cardRepository.findByTypeAndEmployeeId(type, id);
-    return checkType;
-}
-
  export function createCardNumber () {
-    const randomNumber : string = faker.finance.routingNumber(); 
-    return randomNumber;
+    const cardNumber : string = faker.finance.creditCardNumber("################"); 
+    return cardNumber;
  }
 
  export function editCardName (name : string) {
@@ -88,7 +82,7 @@ import * as rechargeRepository from "../repositories/rechargeRepository.js";
      date += fiveYears + oneDay; // Add one day because lap year
 
      const expirationDate = new Date(date).toLocaleDateString();
-     return (expirationDate.substring(3,6) + expirationDate.substring(8));
+     return (expirationDate.substring(3,6) + expirationDate.substring(8)); // remove days and two algarisms year
  }
 
  export function createSecurityCode () {
@@ -99,11 +93,6 @@ import * as rechargeRepository from "../repositories/rechargeRepository.js";
 
      return encryptedCode;
  }
-
- export async function findCard (id : number) {
-    const checkCard = await cardRepository.findById(id);
-    return checkCard;
-}
 
  export async function activateCard (cardId : number, inputSecurityCode : number, 
     inputPassword : string, securityCode : string, password : string) {
@@ -160,7 +149,7 @@ export async function checkBlockedCard (id : number, state : boolean) {
             message: "This card is already blocked"
         } 
    }
-   await changeCardState(id, true);
+   await cardRepository.update(id, {isBlocked: true});
 }
 
 export async function checkReleasedCard (id : number, state : boolean) {
@@ -170,13 +159,7 @@ export async function checkReleasedCard (id : number, state : boolean) {
             message: "This card is already released"
         } 
    }
-   await changeCardState(id, false);
-}
-
-export async function changeCardState (id : number, state : boolean) {
-    await cardRepository.update(id, {
-        isBlocked: state
-    })
+   await cardRepository.update(id, {isBlocked: false});
 }
 
 export async function getCardTransactions (id : number) {
@@ -211,5 +194,4 @@ export async function calculateBalance (transactions : any, recharges : any) {
     });
 
     return (rechargesBalance - transactionsBalance)
-
 }

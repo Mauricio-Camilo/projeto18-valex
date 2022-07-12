@@ -92,4 +92,3 @@ export async function checkStatusCard (req: Request, res: Response, next : NextF
     }
     next();
 }
-

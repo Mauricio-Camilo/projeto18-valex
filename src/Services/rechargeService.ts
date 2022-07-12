@@ -8,7 +8,5 @@ export async function rechargeCard (cardId : number, amount : number) {
             message: "Invalid amount value"
         }
     }
-
     await rechargeRepository.insert({cardId, amount}); 
-
 }
